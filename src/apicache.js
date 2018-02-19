@@ -34,6 +34,7 @@ function ApiCache() {
     debug:              false,
     defaultDuration:    3600000,
     enabled:            true,
+		prefixKey:          '',
     appendKey:          [],
     jsonp:              false,
     redisClient:        false,
@@ -385,8 +386,18 @@ function ApiCache() {
       // embed timer
       req.apicacheTimer = new Date()
 
+			// Initiate empty key:
+			var key = '';
+
+			// add appendKey (either custom function or response path)
+			if (typeof opt.prefixKey === 'function') {
+				key += opt.prefixKey(req, res) + ':'
+			} else if (typeof opt.prefixKey === 'string' && opt.prefixKey.length > 0) {
+				key += opt.prefixKey + ':'
+			}
+
       // In Express 4.x the url is ambigious based on where a router is mounted.  originalUrl will give the full Url
-      var key = req.originalUrl || req.url
+			key += req.originalUrl || req.url;
 
       // Remove querystring from key if jsonp option is enabled
       if (opt.jsonp) {
